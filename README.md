@@ -1,1 +1,1 @@
-# hog_descriptor_tissues
+# Hog Descriptor Tissues
