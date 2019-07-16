@@ -1,6 +1,5 @@
 import cv2
 from skimage.feature import hog
-import params
 import glob
 import numpy as np
 
@@ -11,8 +10,12 @@ PARAM = {
         }
 
 def show_img_hog(img, orientation, pixel_cell, cell_block):
-    _, img_hog = hog(img, visualize=True, orientations=orientation, pixels_per_cell=pixel_cell, cells_per_block=cell_block, transform_sqrt=True, block_norm="L1")
+    features, img_hog = hog(img, visualize=True, orientations=orientation, pixels_per_cell=pixel_cell, cells_per_block=cell_block, transform_sqrt=True, block_norm="L1")
     name_window = 'Orientation: ' + str(orientation) + ' | Pixel per cell ' + str(pixel_cell) + ' | Cells per block: ' + str(cell_block)
+    
+    print('Comprimento: ', len(features))
+    print('Array: ', features)
+    print('Bytes: ', features.__sizeof__())
     
     img_show = np.hstack([img, img_hog])
     cv2.imshow(name_window, img_show)
@@ -37,9 +40,9 @@ def main():
         cv2.waitKey(0)
         cv2.destroyAllWindows()
         
-        for orient in params.PARAM['orientations']:
-            for ppc in params.PARAM['pixels_per_cell']:
-                for cpb in params.PARAM['cells_per_block']:
+        for orient in PARAM['orientations']:
+            for ppc in PARAM['pixels_per_cell']:
+                for cpb in PARAM['cells_per_block']:
                     cont_hog += 1
                     print('orientations: ', orient)
                     print('pixels_per_cell: ', ppc)
@@ -47,8 +50,6 @@ def main():
                     show_img_hog(img, orient, ppc, cpb)
                     print('_________________________________')
         print('QTD de HOGs: ', cont_hog)
-            
-        break
 
 def visualize_equ_hist():
     
@@ -68,7 +69,7 @@ def visualize_equ_hist():
 
 if __name__ == '__main__':    
     
-    if True:
+    if not True:
         visualize_equ_hist()
     
     main()
