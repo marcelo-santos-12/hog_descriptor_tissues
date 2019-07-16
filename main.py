@@ -1,57 +1,74 @@
-import numpy as np
-import os
-#import cv2
-import pandas as pd
-from tqdm import tqdm
+import cv2
 from skimage.feature import hog
-
 import params
+import glob
+import numpy as np
 
-print(params.PARAM)
+PARAM = {
+        'orientations': np.array(np.arange(6, 11, 2)),
+        'pixels_per_cell': np.array([[5,5], [10,10]]) ,
+        'cells_per_block': np.array([[1, 1], [2, 2]])
+        }
 
-def dir_image(dir_):
-    '''
-    Pega o nome das subpastas das imagens histologicas
-    param dir_: caminho completo do diretorio que contem as pastas das imagens
-    return: uma lista contendo o nome das subpastas  
-    '''
-    categories = os.listdir(dir_)
-    print(categories)
-    return categories
+def show_img_hog(img, orientation, pixel_cell, cell_block):
+    _, img_hog = hog(img, visualize=True, orientations=orientation, pixels_per_cell=pixel_cell, cells_per_block=cell_block, transform_sqrt=True, block_norm="L1")
+    name_window = 'Orientation: ' + str(orientation) + ' | Pixel per cell ' + str(pixel_cell) + ' | Cells per block: ' + str(cell_block)
+    
+    img_show = np.hstack([img, img_hog])
+    cv2.imshow(name_window, img_show)
 
-def create_training_data():
-    descriptors = []
-    for category in CATEGORIES:
-        path = os.path.join(DATADIR,category)
-        for img in tqdm(os.listdir(path)):
-            try:
-                img_array = cv2.imread(os.path.join(path,img) ,cv2.IMREAD_GRAYSCALE)  # convert to array                
-                features = hog(img_array, orientations=4, pixels_per_cell=(50, 50), cells_per_block=(1, 1), transform_sqrt=True, block_norm="L1")
-                descriptors.append(features)
-            except Exception as e:
-                print(e)
+    if cv2.waitKey(0) == ord('w'):
 
-    return descriptors
-
-def entry_dir(dir_tissue):
-    pass
-
+        cv2.destroyAllWindows()
+        quit()
+    
+    else:
+        
+        cv2.destroyAllWindows()
+    
 def main():
-    path = '/home/marcelo/Documentos/inteligencia_computacional_disciplina/Tissue_Class'
-    subfolders = dir_image(path)
     
-    for cat in subfolders:
-        dir_imgs = os.path.join(path, cat)
-        name_imgs = os.listdir(dir_imgs)
-        print(name_imgs)
+    path = 'img_sample'
+    
+    for name_img in glob.iglob(path + '/*.tif'):
+        img = cv2.imread(name_img, cv2.IMREAD_GRAYSCALE)
+        cont_hog = 0
+        cv2.imshow('test', img)
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
         
-        
-    
+        for orient in params.PARAM['orientations']:
+            for ppc in params.PARAM['pixels_per_cell']:
+                for cpb in params.PARAM['cells_per_block']:
+                    cont_hog += 1
+                    print('orientations: ', orient)
+                    print('pixels_per_cell: ', ppc)
+                    print('cells_per_block: ', cpb)
+                    show_img_hog(img, orient, ppc, cpb)
+                    print('_________________________________')
+        print('QTD de HOGs: ', cont_hog)
+            
+        break
 
+def visualize_equ_hist():
     
+    img = cv2.imread('img_sample/1DAA_CRC-Prim-HE-05_026.tif_Row_151_Col_1.tif', 0)
+    
+    eq_adap_obj = cv2.createCLAHE(clipLimit=1.0, tileGridSize=(5,5))
+    img_equ_adap = eq_adap_obj.apply(img)
+    img_equ_loc = cv2.equalizeHist(img)
+    
+    img_join = np.hstack([img, img_equ_adap, img_equ_loc])
+    
+    cv2.imshow('test', img_join)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+    
+    quit()
 
-if __name__ == '__main__':
+if __name__ == '__main__':    
+    
+    if True:
+        visualize_equ_hist()
     
     main()
-    
-    
